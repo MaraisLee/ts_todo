@@ -50,11 +50,12 @@ const AppContainer = () => {
   const [todoList, setTodoList] = useState<Array<TodoType>>(initData);
   // 추가기능
   const addTodo = (
+    uid: string,
     title: string,
     body: string,
-    date: string,
+    done: boolean,
     sticker: string,
-    done: boolean = false
+    date: string
   ) => {
     // 새로운 todoType 생성
     // 기존 todoList state를 복사하고
@@ -67,11 +68,12 @@ const AppContainer = () => {
     // 즉, {...todoLis, newTodo} 를 대신한다.
     let newTodoList = produce(todoList, (draft) => {
       draft.push({
+        uid: String(new Date().getTime()),
         title: title,
         body: body,
-        date: date,
-        sticker: sitcker,
         done: false,
+        sticker: sticker,
+        date: date,
       });
     });
     setTodoList(newTodoList);

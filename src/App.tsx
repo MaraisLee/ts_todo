@@ -28,11 +28,7 @@ function App(props: propsType) {
           <DollarOutlined /> TodoList App
         </css.AppTitle>
       </css.Inner>
-      <TodoInput
-        addTodo={props.addTodo}
-        updateTodo={props.updateTodo}
-        deleteTodo={props.deleteTodo}
-      />
+      <TodoInput addTodo={props.addTodo} />
       <TodoList
         todoList={props.todoList}
         updateTodo={props.updateTodo}

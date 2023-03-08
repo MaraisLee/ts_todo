@@ -15,7 +15,7 @@ type propsType = {
   ) => void;
 };
 
-const TodoInput = (props: propsType) => {
+const TodoEdit = (props: propsType) => {
   const [form] = Form.useForm();
 
   // 내용 입력
@@ -134,4 +134,4 @@ const TodoInput = (props: propsType) => {
   );
 };
 
-export default TodoInput;
+export default TodoEdit;

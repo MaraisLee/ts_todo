@@ -1,5 +1,5 @@
 import { useState } from "react";
-// 객체복사 라이브러리
+// 상태관리를 위한 객체복사 라이브러리
 import produce from "immer";
 import App from "./App";
 export type TodoType = {
@@ -47,6 +47,7 @@ const AppContainer = () => {
     },
   ];
 
+  // 화면의 내용을 갱신해 주기 위해서 state Hook 사용
   const [todoList, setTodoList] = useState<Array<TodoType>>(initData);
   // 추가기능
   const addTodo = (
@@ -58,39 +59,39 @@ const AppContainer = () => {
     date: string
   ) => {
     // 새로운 todoType 생성
-    // 기존 todoList state를 복사하고
+    // 기존 todoList state 를 복사하고,
     // 추가 todoList 를 합쳐주고,
-    // todoList state를 업데이트한다.
-    // 이때 불변성 (immutable) 을 유지한다.
+    // todoList state 를 업데이트한다.
+    // 이때, immutable 을 유지한다.
     // 필수 라이브러리로 Immer 가 있다.
-    // Immer는 객체의 불변성을 유지한 것으로
+    // Immer 는 객체의 불변성을 유지하는 것으로
     // 업무에서 필수로 활용한다.
-    // 즉, {...todoLis, newTodo} 를 대신한다.
+    // 즉, {...todoList, newTodo} 를 대신한다.
     let newTodoList = produce(todoList, (draft) => {
       draft.push({
-        uid: String(new Date().getTime()),
+        uid: uid,
         title: title,
         body: body,
-        done: false,
-        sticker: sticker,
         date: date,
+        sticker: sticker,
+        done: false,
       });
     });
+    // state 업데이트 : 화면 갱신
     setTodoList(newTodoList);
   };
-
   // 수정기능
   const updateTodo = (todo: TodoType) => {};
   // 삭제기능
   const deleteTodo = (todo: TodoType) => {
     let index = todoList.findIndex((item) => todo.uid === item.uid);
     // state 의 목록을 삭제 후 갱신한다. 불변성 라이브러리 (immer) 활용
-    // let newTodoList = produce(대상,(draft)=>{})
+    // let newTodoList = produce( 대상, (draft) => {})
     let newTodoList = produce(todoList, (draft) => {
-      // index 의 순서로부터 1개를 제거하고
+      // index 의 순서로 부터 1개를 제거하고
       // 나머지 배열을 리턴한다.
-      // 즉, 원본을 복사해서 새로운 배열을 만들고 그 중에 1개를 제거한 후
-      // 새로운 배열을 리턴하여 state 를 업데이트한다.
+      // 즉, 원본을 복사해서 새로운 배열을 만들고 그 중에 1개를 제거한후
+      // 새로운 배열을 리턴하여 state 를 업데이트 한다.
       draft.splice(index, 1);
     });
     setTodoList(newTodoList);

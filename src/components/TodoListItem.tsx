@@ -1,5 +1,5 @@
+import { Button, List, Space } from "antd";
 import { TodoType } from "../AppContainer";
-import { Space, Button, List } from "antd";
 
 type propsType = {
   todoItem: TodoType;
@@ -16,13 +16,15 @@ const TodoListItem = (props: propsType) => {
         {props.todoItem.date}
       </Space>
       <Space>
-        <Button>수정</Button>
+        <Button>Edit</Button>
         <Button
           type="primary"
           danger
-          onClick={() => props.deleteTodo(props.todoItem)}
+          onClick={() => {
+            props.deleteTodo(props.todoItem);
+          }}
         >
-          삭제
+          Delete
         </Button>
       </Space>
     </List.Item>

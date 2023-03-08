@@ -1,5 +1,6 @@
-import * as css from "../styles/style";
-import { Button, Form, Input, List } from "antd";
+import * as css from "../style/style";
+import { List } from "antd";
+
 import { TodoType } from "../AppContainer";
 import TodoListItem from "./TodoListItem";
 
@@ -20,7 +21,6 @@ const TodoList = (props: propsType) => {
       />
     );
   });
-
   return (
     <css.TodoListWrap>
       <List>{items}</List>

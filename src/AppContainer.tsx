@@ -1,4 +1,4 @@
-import { fireDB } from "./firebase";
+import { auth, fireDB } from "./firebase";
 import { useEffect, useState } from "react";
 // 상태관리를 위한 객체복사 라이브러리
 import produce from "immer";
@@ -13,6 +13,10 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 
 export type TodoType = {
   uid: string;
@@ -48,7 +52,7 @@ const AppContainer = () => {
   // 상태데이터
   let initData: Array<TodoType> = [];
   // 로컬스토리지 이름
-  const localStorageName = "tstodo";
+  // const localStorageName = "tstodo";
 
   // firebase Storage 이름
   const firebaseStorageName = "tsmemo";
@@ -214,6 +218,38 @@ const AppContainer = () => {
 
   // 데이터목록
   const states: StatesType = { todoList };
+
+  // 사용자 기능
+  //  회원가입
+  const faJoin = (email: string, password: string) => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log("errCode : ", errorCode);
+        console.log("errMessage : ", errorMessage);
+      });
+  };
+  // 로그인
+  const fbLogin = (email: string, password: string) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log("errCode : ", errorCode);
+        console.log("errMessage : ", errorMessage);
+      });
+  };
 
   useEffect(() => {
     getLocalData();

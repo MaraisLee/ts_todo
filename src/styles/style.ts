@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 // 전체 레이아웃
 export const Wrapper = styled.div`
   position: realtive;
-  max-width: 1024px;
+  max-width: 560px;
   margin: 0 auto;
   margin-top: 50px;
   background: #fff;

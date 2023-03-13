@@ -1,9 +1,10 @@
-import { auth, fireDB } from "./firebase";
 import { useEffect, useState } from "react";
+import App from "./App";
 // 상태관리를 위한 객체복사 라이브러리
 import produce from "immer";
-import App from "./App";
 import moment from "moment";
+// firebase 관련
+import { fireDB, auth } from "./firebase";
 import {
   collection,
   deleteDoc,
@@ -15,7 +16,9 @@ import {
 } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   signInWithEmailAndPassword,
+  User,
 } from "firebase/auth";
 
 export type TodoType = {
@@ -26,8 +29,16 @@ export type TodoType = {
   sticker: string;
   date: string;
 };
+// 상태를 변경하는 함수를 묶어서 타입으로 정의해 볼까?
 
-// 사용함수 모음집
+// 꼭 타입으로 정의해서 진행하지 않으셔도 됩니다.
+// 즉, 처음부터 최적화를 하는 것은 좋지않은 거 같더군요.
+// 나 혼자 관리하는 개발을 주도 : 타입정의하는것 좋다.
+
+// 타인과 개발한다 : 쪼금 생각을 해야 한다.
+// 단점 : 타인이 Type에 대한 구성을 파악하는 시간 소비
+//        타인이 Type에 학습을 해야 한다.
+// 더 큰 장점 : 오류가 줄어든다(오타, 오류를 줄인다. 안정성)
 export type CallBacksType = {
   addTodo: (
     uid: string,
@@ -40,12 +51,18 @@ export type CallBacksType = {
   updateTodo: (todo: TodoType) => void;
   deleteTodo: (todo: TodoType) => void;
   sortTodo: (sortType: string) => void;
-  // 있을수도 없을수도
   clearTodo?: () => void;
 };
-// 데이터 목록의 type
 export type StatesType = {
   todoList: Array<TodoType>;
+};
+
+// 로그인 및 회원가입 타입정의
+export type CallBacksFireBaseType = {
+  fbLogin: (email: string, password: string) => void;
+  fbJoin: (email: string, password: string) => void;
+  fbLogout: () => void;
+  fbDeleteUser: () => void;
 };
 
 const AppContainer = () => {
@@ -56,32 +73,36 @@ const AppContainer = () => {
 
   // firebase Storage 이름
   const firebaseStorageName = "tsmemo";
-  // 컬렉션(DB 단위:  MongoDB) 불러오기
+  // 컬렉션(DataBase 단위: MongoDB 참조) 불러오기
   const memoCollectionRef = collection(fireDB, firebaseStorageName);
 
-  // 로컬스토리지 활용 => fb 로 변경
+  // 로컬스토리지 활용 : 파이어베이스로 변경
   const getLocalData = async () => {
     // const data = localStorage.getItem(localStorageName);
+    // console.log("localStorage", data);
+
     const q = await query(memoCollectionRef);
     const data = await getDocs(q);
-    // console.log("fb clt", data);
+    // console.log("firebase collection data : ", data);
 
     if (data !== null) {
       // initData = JSON.parse(data);
       // 모든 데이터 가져와서 뜯기
+      // [ {}, {}, {}, ....]
       const firebaseData = data.docs.map((doc) => ({
         ...doc.data(),
       }));
+      // firebaseData = [ {}, {}, {}, ....]
+      // Array<TodoType> 형태가 아니라서 아래로 변환한다.
       const initData = firebaseData.map((item) => {
-        // fb 에서 가져온 데이터를
-        // 우리가 만든 Type 으로 변환하기 (as 사용)
+        // 파이어베이스에서 가져온 데이터를
+        // TypeScript 에서 우리가 만든 Type 으로 형변환하기
         return item as TodoType;
       });
-      // setTodoList(Array<TodoType>); 형태를 원했다.
+      // setTodoList(Array<TodoType>) 형을 원했다.
       setTodoList(initData);
     }
   };
-
   // 화면의 내용을 갱신해 주기 위해서 state Hook 사용
   const [todoList, setTodoList] = useState<Array<TodoType>>(initData);
 
@@ -94,7 +115,7 @@ const AppContainer = () => {
     sticker: string,
     date: string
   ) => {
-    // fb 에 쓰기
+    // firebase 에 쓰기
     try {
       const res = await setDoc(doc(fireDB, firebaseStorageName, uid), {
         uid: uid,
@@ -109,7 +130,15 @@ const AppContainer = () => {
       console.log(e);
     }
 
-    // Immer 사용
+    // 새로운 todoType 생성
+    // 기존 todoList state 를 복사하고,
+    // 추가 todoList 를 합쳐주고,
+    // todoList state 를 업데이트한다.
+    // 이때, immutable 을 유지한다.
+    // 필수 라이브러리로 Immer 가 있다.
+    // Immer 는 객체의 불변성을 유지하는 것으로
+    // 업무에서 필수로 활용한다.
+    // 즉, {...todoList, newTodo} 를 대신한다.
     let newTodoList = produce(todoList, (draft) => {
       draft.push({
         uid: uid,
@@ -122,9 +151,9 @@ const AppContainer = () => {
     });
     // state 업데이트 : 화면 갱신
     setTodoList(newTodoList);
+
     // localStorage.setItem(localStorageName, JSON.stringify(newTodoList));
   };
-
   // 수정기능
   const updateTodo = async (todo: TodoType) => {
     // 원하는 데이터 가져옴
@@ -144,8 +173,10 @@ const AppContainer = () => {
       // console.log("end");
     }
 
+    // console.log("갱신될 내용 : ", todo);
     // 1. 먼저 uid 를 비교해서 배열의 순서에 맞는 1개를 찾는다.
     const index = todoList.findIndex((item) => item.uid === todo.uid);
+    // console.log("갱신될 index : ", index);
     // 2. 해당하는 uid 의 내용을 갱신한다.
     const newTodoList = produce(todoList, (draft) => {
       draft[index] = {
@@ -159,19 +190,22 @@ const AppContainer = () => {
     });
     // 3. state를 업데이트한다.
     setTodoList(newTodoList);
+
     // localStorage.setItem(localStorageName, JSON.stringify(newTodoList));
   };
   // 삭제기능
   const deleteTodo = async (todo: TodoType) => {
+    // firebase 데이터 1개 삭제
     const userDoc = doc(fireDB, firebaseStorageName, todo.uid);
     try {
       const res = await deleteDoc(userDoc);
-      console.log(res); // res는 undefined
+      // console.log(res); // res는 undefined
     } catch (e) {
       console.log(e);
     } finally {
       console.log("end");
     }
+
     let index = todoList.findIndex((item) => todo.uid === item.uid);
     // state 의 목록을 삭제 후 갱신한다. 불변성 라이브러리 (immer) 활용
     // let newTodoList = produce( 대상, (draft) => {})
@@ -183,6 +217,7 @@ const AppContainer = () => {
       draft.splice(index, 1);
     });
     setTodoList(newTodoList);
+
     // localStorage.setItem(localStorageName, JSON.stringify(newTodoList));
   };
   // 전체 목록 삭제
@@ -204,10 +239,9 @@ const AppContainer = () => {
 
     // localStorage.removeItem(localStorageName);
   };
-
   // 정렬기능
   const sortTodo = (sortType: string) => {};
-  // state 관리기능 type
+  // state 관리기능타입
   const callBacks: CallBacksType = {
     addTodo,
     updateTodo,
@@ -216,46 +250,84 @@ const AppContainer = () => {
     clearTodo,
   };
 
-  // 데이터목록
+  // 데이터목록의 타입
   const states: StatesType = { todoList };
 
-  // 사용자 기능
-  //  회원가입
-  const faJoin = (email: string, password: string) => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log(user);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log("errCode : ", errorCode);
-        console.log("errMessage : ", errorMessage);
-      });
-  };
-  // 로그인
+  // 현재 사용자가 로그인 된 상태인지 아닌지 구별
+  const [userLogin, setUserLogin] = useState(false);
+  // 사용자 로그인 기능
   const fbLogin = (email: string, password: string) => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
-        // ...
+        console.log(user);
+        setUserLogin(true);
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        console.log("errCode : ", errorCode);
-        console.log("errMessage : ", errorMessage);
+        console.log("errorCode : ", errorCode);
+        console.log("errorMessage : ", errorMessage);
       });
+  };
+
+  // 사용자 가입
+  const fbJoin = (email: string, password: string) => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        // 생각을 더 해보자 ????
+        setUserLogin(true);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log("errorCode : ", errorCode);
+        console.log("errorMessage : ", errorMessage);
+      });
+  };
+  // 사용자 로그아웃
+  const fbLogout = () => {
+    auth.signOut();
+    setUserLogin(false);
+  };
+  // 회원탈퇴
+  const fbDeleteUser = async () => {
+    await deleteUser(auth.currentUser as User)
+      .then(() => {
+        // User deleted.
+        setUserLogin(false);
+      })
+      .catch((error) => {
+        // An error ocurred
+        // ...
+        console.log("회원 탈퇴 실패");
+      });
+  };
+
+  // 로그인 관리 기능 타입
+  const callBacksFireBase: CallBacksFireBaseType = {
+    fbLogin,
+    fbJoin,
+    fbLogout,
+    fbDeleteUser,
   };
 
   useEffect(() => {
     getLocalData();
   }, []);
 
-  return <App states={states} callBacks={callBacks} />;
+  return (
+    <App
+      states={states}
+      callBacks={callBacks}
+      callBacksFireBase={callBacksFireBase}
+      userLogin={userLogin}
+    />
+  );
 };
 
 export default AppContainer;

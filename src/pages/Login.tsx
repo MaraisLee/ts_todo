@@ -1,29 +1,44 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Form, Input } from "antd";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { CallBacksFireBaseType } from "../AppContainer";
 
-const Login = () => {
+type PropsType = {
+  callBacksFireBase: CallBacksFireBaseType;
+  userLogin: Boolean;
+};
+
+const Login = ({ userLogin, callBacksFireBase }: PropsType) => {
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
   const onFinish = (values: any) => {
     console.log("Received values of form: ", values);
+    callBacksFireBase.fbLogin(values.email, values.password);
   };
-  const onFinishFailed = (errorInfo: any) => {
-    console.log("Failed:", errorInfo);
-  };
+
+  useEffect(() => {
+    if (userLogin) {
+      navigate("/");
+    }
+  }, [userLogin]);
+
   return (
-    <div style={{ paddingBottom: 20 }}>
+    <div style={{ paddingBottom: 20, margin: "0 50px" }}>
       <Form
+        form={form}
         name="normal_login"
         className="login-form"
         initialValues={{ remember: true }}
         onFinish={onFinish}
       >
         <Form.Item
-          name="username"
+          name="email"
           rules={[{ required: true, message: "Please input your Username!" }]}
         >
           <Input
             prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="Username"
+            placeholder="Email"
           />
         </Form.Item>
         <Form.Item
@@ -40,18 +55,10 @@ const Login = () => {
           <Form.Item name="remember" valuePropName="checked" noStyle>
             <Checkbox>Remember me</Checkbox>
           </Form.Item>
-
-          <Link to="/" className="login-form-forgot">
-            Forgot password
-          </Link>
         </Form.Item>
 
         <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="login-form-button"
-          >
+          <Button type="primary" htmlType="submit" style={{ marginRight: 10 }}>
             Log in
           </Button>
           Or <Link to="/join">register now!</Link>

@@ -42,6 +42,8 @@ const Join = ({ callBacksFireBase, userLogin }: PropsType) => {
     // firebase 로 회원가입에 필요한 정보 전송
     console.log("Received values of form: ", values);
     callBacksFireBase.fbJoin(values.email, values.password);
+    alert("회원가입이 완료되었습니다.");
+    navigate("/login");
   };
 
   useEffect(() => {

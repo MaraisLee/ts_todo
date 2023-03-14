@@ -20,6 +20,14 @@ import {
   signInWithEmailAndPassword,
   User,
 } from "firebase/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "./store/store";
+import {
+  fbJoinState,
+  fbLoginState,
+  fbLogoutState,
+  fbDeleteUserState,
+} from "./store/userSlice";
 
 export type TodoType = {
   uid: string;
@@ -30,15 +38,6 @@ export type TodoType = {
   date: string;
 };
 // 상태를 변경하는 함수를 묶어서 타입으로 정의해 볼까?
-
-// 꼭 타입으로 정의해서 진행하지 않으셔도 됩니다.
-// 즉, 처음부터 최적화를 하는 것은 좋지않은 거 같더군요.
-// 나 혼자 관리하는 개발을 주도 : 타입정의하는것 좋다.
-
-// 타인과 개발한다 : 쪼금 생각을 해야 한다.
-// 단점 : 타인이 Type에 대한 구성을 파악하는 시간 소비
-//        타인이 Type에 학습을 해야 한다.
-// 더 큰 장점 : 오류가 줄어든다(오타, 오류를 줄인다. 안정성)
 export type CallBacksType = {
   addTodo: (
     uid: string,
@@ -66,6 +65,10 @@ export type CallBacksFireBaseType = {
 };
 
 const AppContainer = () => {
+  // store 사용
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user);
+
   // 상태데이터
   let initData: Array<TodoType> = [];
   // 로컬스토리지 이름
@@ -253,8 +256,21 @@ const AppContainer = () => {
   // 데이터목록의 타입
   const states: StatesType = { todoList };
 
-  // 현재 사용자가 로그인 된 상태인지 아닌지 구별
-  const [userLogin, setUserLogin] = useState(false);
+  // 사용자 가입
+  const fbJoin = (email: string, password: string) => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log("errorCode : ", errorCode);
+        console.log("errorMessage : ", errorMessage);
+      });
+  };
   // 사용자 로그인 기능
   const fbLogin = (email: string, password: string) => {
     signInWithEmailAndPassword(auth, email, password)
@@ -262,7 +278,8 @@ const AppContainer = () => {
         // Signed in
         const user = userCredential.user;
         console.log(user);
-        setUserLogin(true);
+
+        dispatch(fbLoginState({ email, password }));
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -272,34 +289,17 @@ const AppContainer = () => {
       });
   };
 
-  // 사용자 가입
-  const fbJoin = (email: string, password: string) => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log(user);
-        // 생각을 더 해보자 ????
-        setUserLogin(true);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log("errorCode : ", errorCode);
-        console.log("errorMessage : ", errorMessage);
-      });
-  };
   // 사용자 로그아웃
   const fbLogout = () => {
     auth.signOut();
-    setUserLogin(false);
+    dispatch(fbLogoutState());
   };
   // 회원탈퇴
   const fbDeleteUser = async () => {
     await deleteUser(auth.currentUser as User)
       .then(() => {
         // User deleted.
-        setUserLogin(false);
+        dispatch(fbDeleteUserState());
       })
       .catch((error) => {
         // An error ocurred
@@ -325,7 +325,7 @@ const AppContainer = () => {
       states={states}
       callBacks={callBacks}
       callBacksFireBase={callBacksFireBase}
-      userLogin={userLogin}
+      userLogin={user.userLogin}
     />
   );
 };

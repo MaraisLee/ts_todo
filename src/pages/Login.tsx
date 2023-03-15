@@ -4,21 +4,12 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CallBacksFireBaseType } from "../AppContainer";
 
-// store 관련
-import { useSelector, useDispatch } from "react-redux";
-import { increment, decrement, incrementByAmount } from "../store/counterSlice";
-import type { RootState } from "../store/store";
-
 type PropsType = {
   callBacksFireBase: CallBacksFireBaseType;
   userLogin: Boolean;
 };
 
 const Login = ({ userLogin, callBacksFireBase }: PropsType) => {
-  // store 사용
-  const dispatch = useDispatch();
-  const count = useSelector((state: RootState) => state.counter.value);
-
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const onFinish = (values: any) => {
@@ -34,15 +25,6 @@ const Login = ({ userLogin, callBacksFireBase }: PropsType) => {
 
   return (
     <div style={{ paddingBottom: 20, margin: "0 50px" }}>
-      {/* store 테스트 코드 */}
-      <div>
-        <button onClick={() => dispatch(decrement())}>감소</button>
-        <span>{count}</span>
-        <button onClick={() => dispatch(increment())}>증가</button>
-        <button onClick={() => dispatch(incrementByAmount(100))}>
-          100증가
-        </button>
-      </div>
       <Form
         form={form}
         name="normal_login"

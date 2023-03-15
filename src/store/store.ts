@@ -1,12 +1,28 @@
 import { configureStore } from "@reduxjs/toolkit";
-import counterReducer from "./counterSlice";
 import userReducer from "./userSlice";
+// persist 적용
+import storage from "redux-persist/lib/storage";
+import { combineReducers } from "redux";
+import { persistReducer } from "redux-persist";
+
+const reducers = combineReducers({
+  user: userReducer,
+});
+
+const persistConfig = {
+  key: "root",
+  storage,
+  whitelist: ["user"],
+};
+const presistedReducer = persistReducer(persistConfig, reducers);
 
 export const store = configureStore({
-  reducer: {
-    //slice 작성
-    counter: counterReducer,
-    user: userReducer,
+  reducer: presistedReducer,
+  // 임시로 middleware 체크 기능 제거
+  middleware: (getDefaultMiddleware) => {
+    return getDefaultMiddleware({
+      serializableCheck: false,
+    });
   },
 });
 

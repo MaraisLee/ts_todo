@@ -1,7 +1,6 @@
 import * as css from "./styles/style";
 import { FormOutlined } from "@ant-design/icons";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { Button, Modal, Space } from "antd";
+import { Button, Modal } from "antd";
 import {
   CallBacksFireBaseType,
   CallBacksType,

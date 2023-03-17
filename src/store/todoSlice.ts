@@ -1,4 +1,91 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import moment from "moment";
+import { fireDB } from "../firebase";
+
+//fb 연동
+// firebase Storage 이름
+const firebaseStorageName = "tsmemo";
+// 컬렉션(DataBase 단위: MongoDB 참조) 불러오기
+const memoCollectionRef = collection(fireDB, firebaseStorageName);
+// db 읽기
+export const getTodoFB = createAsyncThunk(
+  "todo/getTodo",
+  async (_, thunkAPI) => {
+    try {
+      const q = await query(memoCollectionRef);
+      const data = await getDocs(q);
+
+      if (data !== null) {
+        // initData = JSON.parse(data);
+        // 모든 데이터 가져와서 뜯기
+        // [ {}, {}, {}, ....]
+        const firebaseData = data.docs.map((doc) => ({
+          ...doc.data(),
+        }));
+        // firebaseData = [ {}, {}, {}, ....]
+        // Array<TodoType> 형태가 아니라서 아래로 변환한다.
+        const initData = firebaseData.map((item) => {
+          // 파이어베이스에서 가져온 데이터를
+          // TypeScript 에서 우리가 만든 Type 으로 형변환하기
+          return item as TodoType;
+        });
+        return initData;
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err);
+    }
+  }
+);
+//목록추가
+export const addTodoFB = createAsyncThunk(
+  "todo/addTodo",
+  async (tempTodo: TodoType, thunkAPI) => {
+    try {
+      const res = await setDoc(doc(fireDB, firebaseStorageName, tempTodo.uid), {
+        uid: tempTodo.uid,
+        title: tempTodo.title,
+        body: tempTodo.body,
+        date: tempTodo.date,
+        sticker: tempTodo.sticker,
+        done: false,
+      });
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err);
+    }
+  }
+);
+// 목록 업데이트
+export const updateTodoFB = createAsyncThunk(
+  "todo/updateTodo",
+  async (tempTodo: TodoType, thunkAPI) => {
+    try {
+      const userDoc = doc(fireDB, firebaseStorageName, tempTodo.uid);
+      const res = await updateDoc(userDoc, {
+        title: tempTodo.title,
+        body: tempTodo.body,
+        sticker: tempTodo.sticker,
+        done: tempTodo.done,
+        date: moment(tempTodo.date).format("YYYY-MM-DD"),
+      });
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err);
+    }
+  }
+);
+// 목록 삭제
+export const deleteTodoFB = createAsyncThunk("todo/deleteTodo", async () => {});
+// 목록 검색
+export const sortTodoFB = createAsyncThunk("todo/sortTodo", async () => {});
+// 전체 삭제
+export const clearTodoFB = createAsyncThunk("todo/clearTodo", async () => {});
 
 export type TodoType = {
   uid: string;

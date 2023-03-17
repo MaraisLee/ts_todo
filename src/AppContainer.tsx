@@ -78,11 +78,6 @@ const AppContainer = () => {
   const user = useSelector((state: RootState) => state.user);
   const todo = useSelector((state: RootState) => state.todo);
 
-  // firebase Storage 이름
-  const firebaseStorageName = "tsmemo";
-  // 컬렉션(DataBase 단위: MongoDB 참조) 불러오기
-  const memoCollectionRef = collection(fireDB, firebaseStorageName);
-
   // 로컬스토리지 활용 : 파이어베이스로 변경
   const getLocalData = async () => {
     const q = await query(memoCollectionRef);

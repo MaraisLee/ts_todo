@@ -4,17 +4,12 @@ import App from "./App";
 import { useSelector, useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "./store/store";
 import {
-  fbLoginState,
-  fbJoinState,
-  fbLogoutState,
-  fbDeleteUserState,
   fbJoinFB,
   fbLoginFB,
   fbLogoutFB,
   fbDeleteUserFB,
 } from "./store/userSlice";
 import {
-  initTodoState,
   addTodoState,
   updateTodoState,
   deleteTodoState,
@@ -26,14 +21,6 @@ import {
   clearTodoFB,
   getTodoFB,
 } from "./store/todoSlice";
-// firebase 관련
-import { auth } from "./firebase";
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-  signInWithEmailAndPassword,
-  User,
-} from "firebase/auth";
 
 export type TodoType = {
   uid: string;

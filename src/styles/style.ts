@@ -14,10 +14,19 @@ export const Inner = styled.div`
 // 앱 타이틀
 export const AppTitle = styled.div`
   text-align: center;
-  padding: 30px 0;
+  padding: 20px 0;
   font-size: 30px;
-  color: green;
+  font-weight: 600;
+  color: #1b75c9;
 `;
+
+export const ButtonWrap = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 15px;
+`;
+
 export const TodoInputWrap = styled.div`
   width: 95%;
   margin: 0 auto;

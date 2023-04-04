@@ -14,28 +14,30 @@ export type FBUserType = {
   email: string;
   password: string;
 };
+
 //회원가입
 export const fbJoinFB = createAsyncThunk(
   "user/join",
   async (tempUser: FBUserType) => {
-    const { email, password } = tempUser;
-    await createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(user);
-        fbJoinState();
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log("errorCode : ", errorCode);
-        console.log("errorMessage : ", errorMessage);
-      });
+    try {
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(
+          auth,
+          tempUser.email,
+          tempUser.password
+        );
+      const user = userCredential.user;
+      console.log("회원가입", user);
+    } catch (error: any) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log("errorCode : ", errorCode);
+      console.log("errorMessage : ", errorMessage);
+    }
   }
 );
 
 // 로그인
-
 export const fbLoginFB = createAsyncThunk(
   "user/login",
   async (tempUser: FBUserType) => {
@@ -46,6 +48,7 @@ export const fbLoginFB = createAsyncThunk(
         tempUser.password
       );
       const user = userCredential.user;
+      console.log("로그인", user);
       // payload 전송
       return tempUser;
     } catch (error: any) {
@@ -56,20 +59,23 @@ export const fbLoginFB = createAsyncThunk(
     }
   }
 );
+
 // 로그아웃
 export const fbLogoutFB = createAsyncThunk("user/logout", async () => {
-  await auth.signOut();
-  fbLogoutState();
+  try {
+    await auth.signOut();
+  } catch (err: any) {
+    console.log("Logout Failure");
+  }
 });
+
 // 회원삭제
 export const fbDeleteUserFB = createAsyncThunk("user/delete", async () => {
-  await deleteUser(auth.currentUser as User)
-    .then(() => {
-      fbDeleteUserState();
-    })
-    .catch((error) => {
-      console.log("회원 탈퇴 실패");
-    });
+  try {
+    await deleteUser(auth.currentUser as User);
+  } catch (error) {
+    console.log("회원 탈퇴 실패");
+  }
 });
 
 //초기 값의 타입정의
@@ -87,9 +93,7 @@ const initialState: LoginState = {
 
 export const userSlice = createSlice({
   name: "user",
-
   initialState,
-
   reducers: {
     fbLoginState: (
       state,
@@ -99,13 +103,16 @@ export const userSlice = createSlice({
       state.email = action.payload.email;
       state.password = action.payload.password;
     },
-    fbJoinState: (state) => {},
+    fbJoinState: (state) => {
+      state.userLogin = false;
+      state.email = "";
+      state.password = "";
+    },
     fbLogoutState: (state) => {
       state.userLogin = false;
       state.email = "";
       state.password = "";
     },
-
     fbDeleteUserState: (state) => {
       state.userLogin = false;
       state.email = "";
@@ -115,7 +122,11 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fbJoinFB.pending, (state, action) => {})
-      .addCase(fbJoinFB.fulfilled, (state, action) => {})
+      .addCase(fbJoinFB.fulfilled, (state, action) => {
+        state.userLogin = false;
+        state.email = "";
+        state.password = "";
+      })
       .addCase(fbJoinFB.rejected, (state, action) => {})
       .addCase(fbLoginFB.pending, (state, action) => {})
       .addCase(fbLoginFB.fulfilled, (state, action) => {
@@ -126,10 +137,18 @@ export const userSlice = createSlice({
       })
       .addCase(fbLoginFB.rejected, (state, action) => {})
       .addCase(fbLogoutFB.pending, (state, action) => {})
-      .addCase(fbLogoutFB.fulfilled, (state, action) => {})
+      .addCase(fbLogoutFB.fulfilled, (state, action) => {
+        state.userLogin = false;
+        state.email = "";
+        state.password = "";
+      })
       .addCase(fbLogoutFB.rejected, (state, action) => {})
       .addCase(fbDeleteUserFB.pending, (state, action) => {})
-      .addCase(fbDeleteUserFB.fulfilled, (state, action) => {})
+      .addCase(fbDeleteUserFB.fulfilled, (state, action) => {
+        state.userLogin = false;
+        state.email = "";
+        state.password = "";
+      })
       .addCase(fbDeleteUserFB.rejected, (state, action) => {});
   },
 });

@@ -21,7 +21,9 @@ type propsType = {
 };
 
 function App({ states, callBacks, callBacksFireBase, userLogin }: propsType) {
+  const path = process.env.PUBLIC_URL;
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -35,16 +37,27 @@ function App({ states, callBacks, callBacksFireBase, userLogin }: propsType) {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+  const logoutModal = () => {
+    setIsLogoutModalOpen(true);
+  };
+  const handleLogoutOk = () => {
+    setIsLogoutModalOpen(false);
+    callBacksFireBase.fbLogout();
+  };
+  const handleLogoutCancel = () => {
+    setIsLogoutModalOpen(false);
+  };
+
   return (
     <BrowserRouter>
       <css.Wrapper className="wrap">
         <css.Inner className="inner">
           <css.AppTitle>
-            <FormOutlined />
-            TodoList App
+            <img src={`${path}/favicon.png`} alt="" width="45px" />
+            My Todo App
             {userLogin && (
-              <>
-                <Button onClick={callBacksFireBase.fbLogout}>로그아웃</Button>
+              <css.ButtonWrap>
+                <Button onClick={logoutModal}>로그아웃</Button>
                 <Button onClick={showModal}>회원탈퇴</Button>
                 <Modal
                   title="회원탈퇴"
@@ -54,7 +67,15 @@ function App({ states, callBacks, callBacksFireBase, userLogin }: propsType) {
                 >
                   <p>정말로 탈퇴하시겠습니까?</p>
                 </Modal>
-              </>
+                <Modal
+                  title="로그아웃"
+                  open={isLogoutModalOpen}
+                  onOk={handleLogoutOk}
+                  onCancel={handleLogoutCancel}
+                >
+                  <p>로그아웃 하시겠습니까?</p>
+                </Modal>
+              </css.ButtonWrap>
             )}
           </css.AppTitle>
         </css.Inner>

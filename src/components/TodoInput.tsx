@@ -46,17 +46,8 @@ const TodoInput = (props: propsType) => {
   // 필수 항목 작성시
   const onFinish = (values: any) => {
     openNotification("top");
-    let day = moment(values.date).format("YYYY-MM-DD");
-    // console.log("Success:", values);
-    // 새로운 아이템
-    // const todoItem: TodoType = {
-    //   uid: String(new Date().getTime()),
-    //   title: values.title,
-    //   body: values.body,
-    //   done: false,
-    //   sticker: values.sticker,
-    //   date: day,
-    // };
+
+    const day = moment(values.date.$d).format("YYYY-MM-DD");
     props.addTodo(
       String(new Date().getTime()),
       values.title,

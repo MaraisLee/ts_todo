@@ -18,7 +18,19 @@ const TodoList = ({
   deleteTodo,
   clearTodo,
 }: propsType) => {
-  let items = todoList.map((item) => {
+  const sortList = todoList.slice().sort((b, a) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    if (dateA < dateB) {
+      return -1;
+    }
+    if (dateA > dateB) {
+      return 1;
+    }
+    return 0;
+  });
+
+  let items = sortList.map((item) => {
     return (
       <TodoListItem
         key={item.uid}

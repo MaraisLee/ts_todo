@@ -37,17 +37,17 @@ const TodoListItem = (props: propsType) => {
   const lineThrough = {
     textDecoration: "line-through",
   };
+  const done = props.todoItem.done;
   return (
     <>
       <List.Item>
-        <Space style={props.todoItem.done ? lineThrough : {}}>
+        <Space style={done ? lineThrough : {}}>
           {
             <div style={{ border: "2px solid black", padding: 5 }}>
               {props.todoItem.title}
             </div>
           }
           {props.todoItem.body}
-
           {
             <img
               src={`${path}/icon/icon${props.todoItem.sticker}.png`}
@@ -57,12 +57,8 @@ const TodoListItem = (props: propsType) => {
           }
         </Space>
         <Space>
-          {props.todoItem.done ? (
-            <>완료</>
-          ) : (
-            <div style={{ color: "red" }}>진행중</div>
-          )}
-          {props.todoItem.date}
+          {done ? <></> : <div style={{ color: "red" }}>-ing</div>}
+          <div style={done ? lineThrough : {}}>{props.todoItem.date}</div>
           <Button onClick={() => navigate(`/edit/${props.todoItem.uid}`)}>
             수정
           </Button>

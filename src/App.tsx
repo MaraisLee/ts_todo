@@ -1,5 +1,4 @@
 import * as css from "./styles/style";
-import { FormOutlined } from "@ant-design/icons";
 import { Button, Modal } from "antd";
 import {
   CallBacksFireBaseType,

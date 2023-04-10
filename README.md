@@ -1,4 +1,4 @@
-# Todo App
+# Todo App (w/typescript)
 
 1. 프로젝트 설계
 

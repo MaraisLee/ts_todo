@@ -7,7 +7,7 @@ import {
   User,
   UserCredential,
 } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth } from "../firebaseModule";
 
 //fb 로그인 관련
 export type FBUserType = {

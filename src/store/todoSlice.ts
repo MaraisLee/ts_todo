@@ -9,7 +9,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import moment from "moment";
-import { fireDB } from "../firebase";
+import { fireDB } from "../firebaseModule";
 
 //fb 연동
 // firebase Storage 이름
